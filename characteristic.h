@@ -3,75 +3,66 @@
 
 using namespace std;
 
-//function prototype
+//define ascii values
+const int ASCII_ZERO = '0';
+const int ASCII_NINE = '9';
+const int ASCII_DECIMAL = '.';
+const int ASCII_DASH = '-';
+
+//characteristic function prototype
 bool characteristic(char numString[], int& c);
 
 //helper function prototypes
-bool isNumber(char numStr[], int len);
-bool isDecimal(char numStr[], int len, int& newLen);
+bool isNumber(char numStr[], int len, int& decimalLen);
 int toInt(char numStr[], int len);
 int findStringLength(char str[]);
-int takeNumToExponent(int num, int exp);
+
 
 //function to find the characteristic of a float expressed as an array of chars
 bool characteristic(char numString[], int& c)
 {
+	//return false by default
+	bool retVal = false;
+
 	//find length of string
 	int len = findStringLength(numString);
 
-	//if all chars are either numbers or a decimal
-	if (isNumber(numString, len))
+	//if all chars are either numbers, a decimal, or a negative sign
+	if (isNumber(numString, len, len))
 	{
-		//check for a decimal
-		isDecimal(numString, len, len);
-
 		//convert char array to an int
 		c = toInt(numString, len);
 
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-//returns false if a char array holds anything other than a number or a decimal
-bool isNumber(char numStr[], int len)
-{
-	//return true by default
-	bool retVal = true;
-
-	//step through char array
-	for (int i = 0; i < len; i++)
-	{
-		//if char isn't a number or decimal
-		if ((numStr[i] < 48 || numStr[i] > 57) && numStr[i] != '.')
-		{
-			retVal = false;
-			break;
-		}
+		retVal = true;
 	}
 
 	return retVal;
 }
 
-//returns true if the char array has a decimal and passes the length of the array before the decimal into newLen
-bool isDecimal(char numStr[], int len, int& newLen)
+//returns false if a char array holds anything other than a number, a decimal, or a negative sign
+bool isNumber(char numStr[], int len, int& decimalLen)
 {
-	//return false by default
-	bool retVal = false;
+	//return true by default
+	bool retVal = true;
+
+	//check for a negative sign at the beginning of the char array
+	if (numStr[0] != ASCII_DASH && (numStr[0] < ASCII_ZERO || numStr[0] > ASCII_NINE))
+	{
+		retVal = false;
+	}
 
 	//step through char array
-	for (int i = 0; i < len; i++)
+	for (int i = 1; i < len; i++)
 	{
-		//if char array contains a decimal
-		if (numStr[i] == '.')
+		//if char is a decimal
+		if (numStr[i] == ASCII_DECIMAL)
 		{
-			//store length of characteristic
-			newLen = i;
-
-			retVal = true;
+			decimalLen = i;
+		}
+		//if char isn't a number
+		else if (numStr[i] < ASCII_ZERO || numStr[i] > ASCII_NINE)
+		{
+			retVal = false;
 			break;
 		}
 	}
@@ -84,54 +75,22 @@ int toInt(char numStr[], int len)
 {
 	int result = 0;
 	int digit;
+	int orderOfMagnitude = 1;
 
 	//step through array
-	for (int i = 0; i < len; i++)
+	for (int i = len - 1; i >= 0; i++)
 	{
-		//turn char into a digit
-		if (numStr[i] == '1')
-		{
-			digit = 1;
-		}
-		else if (numStr[i] == '2')
-		{
-			digit = 2;
-		}
-		else if (numStr[i] == '3')
-		{
-			digit = 3;
-		}
-		else if (numStr[i] == '4')
-		{
-			digit = 4;
-		}
-		else if (numStr[i] == '5')
-		{
-			digit = 5;
-		}
-		else if (numStr[i] == '6')
-		{
-			digit = 6;
-		}
-		else if (numStr[i] == '7')
-		{
-			digit = 7;
-		}
-		else if (numStr[i] == '8')
-		{
-			digit = 8;
-		}
-		else if (numStr[i] == '9')
-		{
-			digit = 9;
-		}
-		else
-		{
-			digit = 0;
-		}
+		//turn char into an int
+		digit = numStr[i] - ASCII_ZERO;
+
+		//put int at the correct order of magnitude
+		digit = digit * orderOfMagnitude;
 
 		//add digit to result
-		result = result + (digit*takeNumToExponent(10, len - i - 1));
+		result = result + digit;
+
+		//increase the order of magnitude
+		orderOfMagnitude = orderOfMagnitude * 10;
 	}
 
 	return result;
@@ -149,18 +108,4 @@ int findStringLength(char str[])
 	}
 
 	return len;
-}
-
-//multiplies a number by itself a given amount
-int takeNumToExponent(int num, int exp)
-{
-	int result = 1;
-
-	//multiply num by itself exp times
-	for (int i = 0; i < exp; i++)
-	{
-		result = result*num;
-	}
-
-	return result;
 }
