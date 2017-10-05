@@ -1,12 +1,12 @@
 #pragma once
 
-#define ASCII_ZERO_DECIMAL 48
-#define ASCII_NINE_DECIMAL 57
+const int ASCII_ZERO_DECIMAL = 48;
+const int ASCII_NINE_DECIMAL = 57;
 
 //This functions loops through the numString and has three features:
 //1. Will return false if there is an invalid character
-//2. Returns the start point of the mantissa so that it can be extracted
-//3. Returns the length from the mantissa so that the right amount of numbers are converted 
+//2. Stores the start point of the mantissa so that it can be extracted
+//3. Stores the length from the mantissa so that the right amount of numbers are converted 
 bool verifyCharsAndLength(char numString[], int& pointOfMantissa, int& length);
 
 //This function will take the numString variable and extract the mantissa from it
@@ -17,12 +17,12 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 {
 	bool retVal = false;
 	//This integer will be the index to the first element in the mantissa
-	int pointOfMantissa = -1;
+	int startOfMantissa;
 	//This integer will be the length of the mantissa NOT including trailing zeros
 	int length = 0;
 
 	//If the c string is valid use the information from the verification to convert to an int
-	if (verifyCharsAndLength(numString, pointOfMantissa, length))
+	if (verifyCharsAndLength(numString, startOfMantissa, length))
 	{
 		retVal = true;
 
@@ -35,7 +35,7 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 		
 		//Move backwards from the last value of the mantissa (NOT including trailing zeros) to the
 		//to the first value of the mantissa 
-		for (int i = pointOfMantissa + length - 1; i >= pointOfMantissa; i--)
+		for (int i = startOfMantissa + length - 1; i >= startOfMantissa; i--)
 		{
 			//Each iteration add whatever number you're on after being multplied by its respective place value
 			numerator += (numString[i] - ASCII_ZERO_DECIMAL) * denominator;
@@ -54,43 +54,55 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 	return retVal;
 }
 
-bool verifyCharsAndLength(char numString[], int& pointOfMantissa, int& length)
+bool verifyCharsAndLength(char numString[], int& startOfMantissa, int& length)
 {
+	const int DECIMAL_POINT = '.';
 	bool retVal = true;
 
 	//This number represents how many trailing zeros are in the c string
 	int numOfTrailingZeros = 0;
 
+	//Represents the element currently at while looping through the characteristic
+	int characteristicIndex = 0;
+
 	//The mantissa is not found until after the decimal point, ignore everything up until then
-	while (numString[length] != '.')
+	while (numString[characteristicIndex] != DECIMAL_POINT)
 	{
 		//In case there is no mantissa in the array, just end the function
 		if (numString[length] == '\0')
 		{
+			retVal = false;
 			break;
 		}
 		//If nothing happens, increment the index so that the next element can be examined
-		length++;
+		characteristicIndex++;
 	}
 
-	//Move to the next element of the array now that the point of mantissa has been found
-	//Record the mantissa point as well
-	length++;
-	pointOfMantissa = length;
+	//If we reached the end before finding a decimal, do not increment
+	//This way the next loop is skipped
+	if (!numString[characteristicIndex] == '\0')
+	{
+		characteristicIndex++;
+	}
+
+	//Move to the next element of the array now that the start of mantissa has been found
+	//Record the mantissa start as well
+	int mantissaIndex = characteristicIndex;
+	startOfMantissa = characteristicIndex;
 
 	//The function should stop searching at the end of the array marked by the zero terminator
-	while (numString[length] != '\0')
+	while (numString[mantissaIndex] != '\0')
 	{
 		//Now that the mantissa is found, start checking the validity of the chars
 		//Make sure it is within range of the ASCII char values for 0 through 9
-		if (!(numString[length] >= ASCII_ZERO_DECIMAL && numString[length] <= ASCII_NINE_DECIMAL))
+		if (!(numString[mantissaIndex] >= ASCII_ZERO_DECIMAL && numString[mantissaIndex] <= ASCII_NINE_DECIMAL))
 		{
 			retVal = false;
 			break;
 		}
 
 		//If the number is a zero, it could be a trailing zero so increment the trailing zeros variable
-		if (numString[length] == ASCII_ZERO_DECIMAL)
+		if (numString[mantissaIndex] == ASCII_ZERO_DECIMAL)
 		{
 			numOfTrailingZeros++;
 		}
@@ -102,17 +114,13 @@ bool verifyCharsAndLength(char numString[], int& pointOfMantissa, int& length)
 		}
 
 		//Continue on to the next element of the array
-		length++;
+		mantissaIndex++;
 	}
 
 	//We do not want to count the null terminator as part of the length
 	//However, we would have to add one to the lenght to count for array start at 0
-	//Subtract the point of mantissa and number of zeros to find the legnth of significant numbers
-	length -= (pointOfMantissa + numOfTrailingZeros);
-	char zero = '0';
-	if (zero == 48)
-	{
+	//Subtract the start of mantissa and number of zeros to find the legnth of significant numbers
+	length = mantissaIndex - (startOfMantissa + numOfTrailingZeros);
 
-	}
 	return retVal;
 }
