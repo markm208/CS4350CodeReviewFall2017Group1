@@ -61,6 +61,7 @@ bool multiply(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int
 	int firstFraction;
 	int secondFraction;
 
+	bool retVal;
 	bool negative = isResultNegative(c1, c2);
 
 	c1 = abs(c1);
@@ -104,7 +105,7 @@ bool multiply(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int
 		totalDenominator = d1 * d2;
 	}
 
-	buildString(totalNumerator, totalDenominator, result, len);
+	retVal = buildString(totalNumerator, totalDenominator, result, len);
 
 	if (negative)
 	{
@@ -116,7 +117,7 @@ bool multiply(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int
 		result[0] = '-';
 	}
 
-	return true;
+	return retVal;
 }
 
 int getNumberOfDigits(int number)
@@ -186,10 +187,12 @@ bool buildString(int numerator, int denominator, char * result, int len)
 
 	int characteristicLen = strLen(characteristic);
 
+	bool retVal = true;
+
 	if (characteristicLen > len)
 	{
 		// Too large
-		return false;
+		retVal = false;
 	}
 	else
 	{
@@ -224,7 +227,7 @@ bool buildString(int numerator, int denominator, char * result, int len)
 	free(characteristic);
 	free(mantissa);
 
-	return true;
+	return retVal;
 
 }
 char * buildCharacteristic(int numerator, int denominator)
